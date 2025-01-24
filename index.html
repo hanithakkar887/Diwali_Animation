@@ -1,0 +1,199 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fireworks Animation</title>
+    <style> 
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: black;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+        .firework-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+        .particle, .rocket {
+            position: absolute;
+            border-radius: 50%;
+        }
+        .text-display {
+            position: absolute;
+            top: 20%;
+            width: 100%;
+            text-align: center;
+            font-size: 5rem;
+            opacity: 0;
+            color: yellow;
+            transform: translateY(-50%);
+            text-shadow: 0 0 10px #FFD700, 0 0 20px #FFD700, 0 0 30px #FFD700, 0 0 40px #FF4500;
+        }
+        .photo-display {
+            position: absolute;
+            top: 30%; /* Adjusted position higher */
+            width: 100%;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 2s ease;
+        }
+        .photo-display img {
+            width: 250px;
+            height: auto;
+            border-radius: 50%;
+            box-shadow: 0 0 35px #FFD700, 0 0 25px #FF4500;
+        }
+        .author-text {
+            position: absolute;
+            top: 74%; /* Adjusted position higher */
+            width: 100%;
+            text-align: center;
+            font-size: 3rem;
+            opacity: 0;
+            color: yellow;
+            text-shadow: 0 0 40px #FFD700, 0 0 20px #FFD700, 0 0 30px #FFD700, 0 0 40px #FF4500;
+        }
+    </style>
+</head>
+<body>
+    <div class="firework-container"></div>
+    <div class="text-display" id="textDisplay">जय श्री राम</div>
+    <div class="photo-display" id="photoDisplay">
+        <img src="https://tse4.mm.bing.net/th?id=OIP.m1tpoMBiu5Z_0uaBe7Q69QHaHa&pid=Api&P=0&h=180" alt="Ram Image">
+    </div>
+    <div class="author-text" id="authorText">शुभ दीपावली</div>
+
+    <script>
+        const fireworkContainer = document.querySelector('.firework-container');
+        const textDisplay = document.getElementById('textDisplay');
+        const photoDisplay = document.getElementById('photoDisplay');
+        const authorText = document.getElementById('authorText');
+        let fireworksInterval;
+
+        function getRandomColor() {
+            const colors = ['#FF5733', '#FFBD33', '#33FF57', '#335FFF', '#FF33A2', '#33FFF9', '#FF33E3', '#FF3388', '#33FFBB', '#FFD933'];
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+
+        function createFirework(x, y) {
+            for (let i = 0; i < 150; i++) {
+                const particle = document.createElement('div');
+                const size = Math.random() * 4 + 2;
+                const color = getRandomColor();
+
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                particle.style.backgroundColor = color;
+                particle.style.boxShadow = `0 0 10px ${color}, 0 0 20px ${color}`;
+                particle.style.left = `${x}px`;
+                particle.style.top = `${y}px`;
+                particle.classList.add('particle');
+                
+                fireworkContainer.appendChild(particle);
+
+                const angle = Math.random() * 2 * Math.PI;
+                const distance = Math.random() * 200 + 80;
+                const xMove = Math.cos(angle) * distance;
+                const yMove = Math.sin(angle) * distance;
+
+                particle.animate([{
+                    transform: `translate(0, 0)`, opacity: 1
+                }, {
+                    transform: `translate(${xMove}px, ${yMove}px) scale(0.6)`, opacity: 0
+                }], {
+                    duration: 2000 + Math.random() * 1000,
+                    easing: 'ease-out'
+                });
+
+                setTimeout(() => particle.remove(), 3000);
+            }
+        }
+
+        function createRockets(x, y) {
+            const numRockets = Math.floor(Math.random() * 5) + 3;
+            for (let i = 0; i < numRockets; i++) {
+                const rocket = document.createElement('div');
+                const size = Math.random() * 6 + 4;
+                const color = getRandomColor();
+
+                rocket.style.width = `${size}px`;
+                rocket.style.height = `${size * 2}px`;
+                rocket.style.backgroundColor = color;
+                rocket.style.boxShadow = `0 0 10px ${color}, 0 0 20px ${color}`;
+                rocket.style.left = `${x + (Math.random() * 50 - 25)}px`;
+                rocket.style.top = `${y}px`;
+                rocket.classList.add('rocket');
+
+                fireworkContainer.appendChild(rocket);
+
+                const launchHeight = window.innerHeight - 100;
+                const sway = Math.random() * 40 - 20;
+
+                rocket.animate([{
+                    transform: `translateY(0) translateX(0)`, opacity: 1
+                }, {
+                    transform: `translateY(-${launchHeight}px) translateX(${sway}px)`, opacity: 0.7
+                }], {
+                    duration: 1000,
+                    easing: 'ease-out'
+                });
+
+                setTimeout(() => {
+                    createFirework(parseFloat(rocket.style.left), parseFloat(rocket.style.top) - launchHeight);
+                    rocket.remove();
+                }, 1500);
+            }
+        }
+
+        function startFireworks() {
+            fireworksInterval = setInterval(() => {
+                const x = Math.random() * window.innerWidth;
+                const y = window.innerHeight;
+                createRockets(x, y);
+            }, 1000);
+        }
+
+        function stopFireworksAndShowTexts() {
+            clearInterval(fireworksInterval);
+            fireworkContainer.innerHTML = '';
+            displayText("जय श्री राम");
+            textDisplay.style.opacity = '1';
+            startFireworks();
+            setTimeout(displayPhoto, 3000); // Show photo after text animation
+        }
+
+        function displayText(text) {
+            textDisplay.textContent = "";
+            let index = 0;
+
+            const textInterval = setInterval(() => {
+                if (index < text.length) {
+                    textDisplay.textContent += text[index];
+                    index++;
+                } else {
+                    clearInterval(textInterval);
+                }
+            }, 400);
+        }
+
+        function displayPhoto() {
+            photoDisplay.style.opacity = '1';
+            setTimeout(displayAuthorText, 2000); // Show author text after photo
+        }
+
+        function displayAuthorText() {
+            authorText.style.opacity = '1';
+        }
+
+        startFireworks();
+        setTimeout(stopFireworksAndShowTexts, 200);
+    </script>
+</body>
+</html>
